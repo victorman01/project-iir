@@ -68,7 +68,7 @@ echo '<header>
 
 echo '<main>';
 echo '<form method="POST" action="">
-      Input Keyword <input type="text" name="keyword">
+      Input Keyword <input type="text" name="keyword" value="' . (isset($_POST['keyword']) ? $_POST['keyword'] : '') . '">
       <input type="submit" name="crawls" value="Crawls"><br>
       </form>';
 
