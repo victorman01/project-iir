@@ -1,0 +1,22 @@
+{
+    "name": "algenza/fzt-stemming",
+    "description": "Stemming Porter Bahasa Indonesia berdasarkan publikasi ilmiah Fadillah Z Tala : A Study of Stemming Effects on Information Retrieval in Bahasa Indonesia",
+    "type": "package",
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
+    },
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Billy Renyut",
+            "email": "milhanol068@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Algenza\\Fztstemming\\": "src/"
+        }
+    },
+    "require": {}
+
+}
