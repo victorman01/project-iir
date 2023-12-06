@@ -32,8 +32,9 @@
         include_once('simple_html_dom.php');
         require_once __DIR__ . '/vendor/autoload.php';
 
+
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir", 3307); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;
@@ -50,15 +51,12 @@
             echo '<th>Authors</th>';
             echo '<th>Abstract</th>';
             echo '</tr>';
-            
+
             foreach ($html->find('div[class="gs_r gs_or gs_scl"]') as $article) {
                 $title = $article->find('h3[class="gs_rt"]', 0)->find('a', 0)->plaintext;
-                $numCitation = "";
-                $authors = "";
-                $abstract = "";
-
+                $numCitation = $authors = $abstract = "";
                 $linkArticle = $article->find('div[class="gs_ri"]', 0)->find('div[class="gs_a"]', 0)->find('a');
-                if (count($linkArticle) > 0) {
+                if ($linkArticle) {
                     $linkArticle = $linkArticle[0]->href;
                     $html2 = file_get_html("https://scholar.google.com$linkArticle");
                     foreach ($html2->find('tr[class="gsc_a_tr"]') as $temp) {
@@ -84,9 +82,9 @@
                                 }
                             }
                         $query = mysqli_query($con, "select count(*) from articles where title = '$title'");
-                        $x = mysqli_fetch_all($query);
+                        $res = mysqli_fetch_all($query);
 
-                        if ($x[0][0] == 0) {
+                        if ($res[0][0] == 0) {
                             $query = mysqli_query($con, "insert into articles (title, author, citations, abstract) values ('$title', '$authors', $numCitation, '$abstract')");
                         }
                         echo '<tr>';
