@@ -9,7 +9,7 @@ use Phpml\Exception\InvalidArgumentException;
 class StandardDeviation
 {
     /**
-     * @param array|float[]|int[] $numbers
+     * @param float[]|int[] $numbers
      */
     public static function population(array $numbers, bool $sample = true): float
     {
@@ -32,14 +32,14 @@ class StandardDeviation
             --$n;
         }
 
-        return sqrt($carry / $n);
+        return ($carry / $n) ** .5;
     }
 
     /**
      * Sum of squares deviations
      * ∑⟮xᵢ - μ⟯²
      *
-     * @param array|float[]|int[] $numbers
+     * @param float[]|int[] $numbers
      */
     public static function sumOfSquares(array $numbers): float
     {
@@ -50,7 +50,7 @@ class StandardDeviation
         $mean = Mean::arithmetic($numbers);
 
         return array_sum(array_map(
-            function ($val) use ($mean) {
+            static function ($val) use ($mean): float {
                 return ($val - $mean) ** 2;
             },
             $numbers

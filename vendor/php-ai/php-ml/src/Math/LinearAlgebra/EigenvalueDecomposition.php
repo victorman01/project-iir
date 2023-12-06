@@ -128,12 +128,13 @@ class EigenvalueDecomposition
         $vectors = new Matrix($vectors);
         $vectors = array_map(function ($vect) {
             $sum = 0;
-            for ($i = 0; $i < count($vect); ++$i) {
+            $count = count($vect);
+            for ($i = 0; $i < $count; ++$i) {
                 $sum += $vect[$i] ** 2;
             }
 
-            $sum = sqrt($sum);
-            for ($i = 0; $i < count($vect); ++$i) {
+            $sum **= .5;
+            for ($i = 0; $i < $count; ++$i) {
                 $vect[$i] /= $sum;
             }
 
@@ -208,11 +209,11 @@ class EigenvalueDecomposition
                 // Generate Householder vector.
                 for ($k = 0; $k < $i; ++$k) {
                     $this->d[$k] /= $scale;
-                    $h += pow($this->d[$k], 2);
+                    $h += $this->d[$k] ** 2;
                 }
 
                 $f = $this->d[$i_];
-                $g = sqrt($h);
+                $g = $h ** .5;
                 if ($f > 0) {
                     $g = -$g;
                 }
@@ -320,7 +321,7 @@ class EigenvalueDecomposition
         $this->e[$this->n - 1] = 0.0;
         $f = 0.0;
         $tst1 = 0.0;
-        $eps = pow(2.0, -52.0);
+        $eps = 2.0 ** -52.0;
 
         for ($l = 0; $l < $this->n; ++$l) {
             // Find small subdiagonal element
@@ -443,7 +444,7 @@ class EigenvalueDecomposition
                     $h += $this->ort[$i] * $this->ort[$i];
                 }
 
-                $g = sqrt($h);
+                $g = $h ** .5;
                 if ($this->ort[$m] > 0) {
                     $g *= -1;
                 }
@@ -501,7 +502,8 @@ class EigenvalueDecomposition
                     }
 
                     // Double division avoids possible underflow
-                    $g = ($g / $this->ort[$m]) / $this->H[$m][$m - 1];
+                    $g /= $this->ort[$m];
+                    $g /= $this->H[$m][$m - 1];
                     for ($i = $m; $i <= $high; ++$i) {
                         $this->V[$i][$j] += $g * $this->ort[$i];
                     }
@@ -548,7 +550,7 @@ class EigenvalueDecomposition
         $n = $nn - 1;
         $low = 0;
         $high = $nn - 1;
-        $eps = pow(2.0, -52.0);
+        $eps = 2.0 ** -52.0;
         $exshift = 0.0;
         $p = $q = $r = $s = $z = 0;
         // Store roots isolated by balanc and compute matrix norm
@@ -596,7 +598,7 @@ class EigenvalueDecomposition
                 $w = $this->H[$n][$n - 1] * $this->H[$n - 1][$n];
                 $p = ($this->H[$n - 1][$n - 1] - $this->H[$n][$n]) / 2.0;
                 $q = $p * $p + $w;
-                $z = sqrt(abs($q));
+                $z = abs($q) ** .5;
                 $this->H[$n][$n] += $exshift;
                 $this->H[$n - 1][$n - 1] += $exshift;
                 $x = $this->H[$n][$n];
@@ -620,7 +622,7 @@ class EigenvalueDecomposition
                     $s = abs($x) + abs($z);
                     $p = $x / $s;
                     $q = $z / $s;
-                    $r = sqrt($p * $p + $q * $q);
+                    $r = ($p * $p + $q * $q) ** .5;
                     $p /= $r;
                     $q /= $r;
                     // Row modification
@@ -682,7 +684,7 @@ class EigenvalueDecomposition
                     $s = ($y - $x) / 2.0;
                     $s *= $s + $w;
                     if ($s > 0) {
-                        $s = sqrt($s);
+                        $s **= .5;
                         if ($y < $x) {
                             $s = -$s;
                         }
@@ -733,7 +735,7 @@ class EigenvalueDecomposition
 
                 // Double QR step involving rows l:n and columns m:n
                 for ($k = $m; $k <= $n - 1; ++$k) {
-                    $notlast = ($k != $n - 1);
+                    $notlast = $k != $n - 1;
                     if ($k != $m) {
                         $p = $this->H[$k][$k - 1];
                         $q = $this->H[$k + 1][$k - 1];
@@ -750,7 +752,7 @@ class EigenvalueDecomposition
                         break;
                     }
 
-                    $s = sqrt($p * $p + $q * $q + $r * $r);
+                    $s = ($p * $p + $q * $q + $r * $r) ** .5;
                     if ($p < 0) {
                         $s = -$s;
                     }

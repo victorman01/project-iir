@@ -1,0 +1,128 @@
+* {
+   margin: 0px;
+   padding: 0px;
+}
+
+body {
+   background-color: #a9a9a9;
+}
+
+.LinkQuerry:link {
+   color: black;
+   text-decoration: none;
+}
+
+.LinkQuerry:visited {
+   color: black;
+   text-decoration: none;
+}
+
+.LinkQuerry:hover {
+   color: white;
+   text-decoration: underline;
+   background-color: #7f7f7f;
+}
+
+#Menu {
+   float: right;
+   text-align: right;
+   margin: 10px 20px 0px 0px;
+   font-size: x-large;
+   font-weight: bold;
+}
+
+.MenuItem:link {
+   color: black;
+   text-decoration: none;
+}
+
+.MenuItem:visited {
+   color: black;
+   text-decoration: none;
+}
+
+.MenuItem:hover {
+   color: white;
+   text-decoration: underline;
+}
+
+#Position {
+   color: white;
+}
+
+#Title {
+   width: fit-content;
+   margin-top: 20px;
+   position: relative;
+   left: 50%;
+   transform: translateX(-50%);
+   text-align: center;
+}
+
+#SearchBarCrawl {
+   width: fit-content;
+   margin-top: 30px;
+   padding: 30px;
+   position: relative;
+   left: 50%;
+   transform: translateX(-50%);
+   text-align: center;
+   background-color: #bebebe;
+   border-radius: 20px;
+}
+
+#SearchBarHome {
+   width: fit-content;
+   margin-top: 30px;
+   padding: 30px 30px 10px 30px;
+   position: relative;
+   left: 50%;
+   transform: translateX(-50%);
+   text-align: center;
+   background-color: #bebebe;
+   border-radius: 20px;
+}
+
+#Keyword {
+   font-size: x-large;
+   font-weight: bold;
+}
+
+#InputText {
+   width: 500px;
+   margin-left: 5px;
+   font-size: large;
+   padding: 10px;
+   border-radius: 20px;
+   border: none;
+}
+
+#Button {
+   margin-left: 5px;
+   font-size: large;
+   padding: 5px 30px 5px 30px;
+   border-radius: 5px;
+   background-color: #949494;
+   font-weight: bold;
+}
+
+#Button:hover {
+   background-color: #7f7f7f;
+   color: white;
+}
+
+.Journal {
+   margin: 20px 20px 20px 20px;
+   font-size: large;
+   background-color: #bebebe;
+   border-radius: 20px;
+   padding: 10px;
+}
+
+#RadioLabel {
+   margin-top: 10px;
+   margin-right: 10px;
+   display: inline-block;
+   font-size: x-large;
+   font-weight: bold;
+}

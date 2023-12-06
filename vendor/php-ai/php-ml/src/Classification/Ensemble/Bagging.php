@@ -39,7 +39,7 @@ class Bagging implements Classifier
     /**
      * @var array
      */
-    protected $classifierOptions = ['depth' => 20];
+    protected $classifierOptions = ['maxDepth' => 20];
 
     /**
      * @var array
@@ -157,7 +157,7 @@ class Bagging implements Classifier
     {
         $predictions = [];
         foreach ($this->classifiers as $classifier) {
-            /* @var $classifier Classifier */
+            /** @var Classifier $classifier */
             $predictions[] = $classifier->predict($sample);
         }
 

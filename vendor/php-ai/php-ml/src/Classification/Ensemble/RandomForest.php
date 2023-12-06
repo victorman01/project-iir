@@ -41,7 +41,7 @@ class RandomForest extends Bagging
      * Default value for the ratio is 'log' which results in log(numFeatures, 2) + 1
      * features to be taken into consideration while selecting subspace of features
      *
-     * @param string|float $ratio
+     * @param mixed $ratio
      */
     public function setFeatureSubsetRatio($ratio): self
     {
@@ -73,7 +73,9 @@ class RandomForest extends Bagging
             throw new InvalidArgumentException('RandomForest can only use DecisionTree as base classifier');
         }
 
-        return parent::setClassifer($classifier, $classifierOptions);
+        parent::setClassifer($classifier, $classifierOptions);
+
+        return $this;
     }
 
     /**
@@ -86,7 +88,7 @@ class RandomForest extends Bagging
         // Traverse each tree and sum importance of the columns
         $sum = [];
         foreach ($this->classifiers as $tree) {
-            /* @var $tree DecisionTree */
+            /** @var DecisionTree $tree */
             $importances = $tree->getFeatureImportances();
 
             foreach ($importances as $column => $importance) {
@@ -122,16 +124,20 @@ class RandomForest extends Bagging
     }
 
     /**
-     * @param DecisionTree $classifier
-     *
      * @return DecisionTree
      */
     protected function initSingleClassifier(Classifier $classifier): Classifier
     {
+        if (!$classifier instanceof DecisionTree) {
+            throw new InvalidArgumentException(
+                sprintf('Classifier %s expected, got %s', DecisionTree::class, get_class($classifier))
+            );
+        }
+
         if (is_float($this->featureSubsetRatio)) {
             $featureCount = (int) ($this->featureSubsetRatio * $this->featureCount);
         } elseif ($this->featureSubsetRatio === 'sqrt') {
-            $featureCount = (int) sqrt($this->featureCount) + 1;
+            $featureCount = (int) ($this->featureCount ** .5) + 1;
         } else {
             $featureCount = (int) log($this->featureCount, 2) + 1;
         }

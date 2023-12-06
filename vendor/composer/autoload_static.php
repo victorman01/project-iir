@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
 {
     public static $prefixLengthsPsr4 = array (
+        'v' => 
+        array (
+            'voku\\' => 5,
+        ),
         'P' => 
         array (
             'Phpml\\' => 6,
@@ -14,6 +18,10 @@ class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
     );
 
     public static $prefixDirsPsr4 = array (
+        'voku\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/voku/stop-words/src/voku',
+        ),
         'Phpml\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-ai/php-ml/src',
@@ -21,6 +29,13 @@ class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
     );
 
     public static $prefixesPsr0 = array (
+        'T' => 
+        array (
+            'Text' => 
+            array (
+                0 => __DIR__ . '/..' . '/pear/text_languagedetect',
+            ),
+        ),
         'S' => 
         array (
             'Sastrawi\\' => 
@@ -30,12 +45,17 @@ class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520::$prefixDirsPsr4;
             $loader->prefixesPsr0 = ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520::$classMap;
 
         }, null, ClassLoader::class);
     }

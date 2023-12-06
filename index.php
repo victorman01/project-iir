@@ -6,6 +6,27 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Google Scholar Crawler | Home</title>
    <link rel="stylesheet" href="css/styles.css">
+   <style>
+      .container {
+         display: flex;
+         justify-content: space-between;
+      }
+
+      .results-container {
+         width: 90%; /* Adjust the width as needed */
+      }
+
+      .suggestions-container {
+         width: 8%;
+      }
+
+      .Journal {
+         border: 1px solid #ccc;
+         padding: 10px;
+         margin-bottom: 15px;
+      }
+   </style>
+
 </head>
 
 <body>
@@ -23,7 +44,23 @@
    </nav>
 
    <main>
-      <h1 style="text-align:center;">WELCOME</h1>
+      <div>
+         <form method="GET" action="#">
+            <label for="keyword">Input Keyword:</label>
+            <input type="text" id="keyword" name="keyword" value="<?= isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
+            <button type="submit" name="search">Search</button>
+            <div class="radio-group">
+                  <label>
+                     <input type="radio" name="search-type" value="euclidean" <?= (isset($_GET["search-type"]) && $_GET["search-type"] == "euclidean") ? "checked" : ""; ?>>
+                     <span>Euclidean</span>
+                  </label>
+                  <label>
+                     <input type="radio" name="search-type" value="jaccard" <?= (isset($_GET["search-type"]) && $_GET["search-type"] == "jaccard") ? "checked" : ""; ?>>
+                     <span>Jaccard</span>
+                  </label>
+            </div>
+         </form>
+      </div>
    </main>
 
    <script>
