@@ -51,7 +51,7 @@
             echo '<th>Number Citations</th>';
             echo '<th>Authors</th>';
             echo '<th>Abstract</th>';
-            echo '</tr>';
+            echo '</tr>';   
 
             foreach ($html->find('div[class="gs_r gs_or gs_scl"]') as $article) {
                 $title = $article->find('h3[class="gs_rt"] a', 0)->plaintext;
