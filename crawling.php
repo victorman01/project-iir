@@ -32,15 +32,13 @@
         include_once('simple_html_dom.php');
         require_once __DIR__ . '/vendor/autoload.php';
 
-
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;
             }
-            $key = $_POST['keyword'];
-            $key = str_replace(' ', '+', $key);
+            $key = str_replace(' ', '+', $_POST['keyword']);
             $html = file_get_html("https://scholar.google.com/scholar?q=$key&hl=en&as_sdt=0,5&as_rr=1");
 
             echo '<p>CRAWLING RESULT</p>';
@@ -57,15 +55,13 @@
                 $numCitation = $authors = $abstract = "";
                 $linkArticle = $article->find('div[class="gs_ri"]', 0)->find('div[class="gs_a"]', 0)->find('a');
                 if ($linkArticle) {
-                    $linkArticle = $linkArticle[0]->href;
-                    $html2 = file_get_html("https://scholar.google.com$linkArticle");
+                    $html2 = file_get_html("https://scholar.google.com".$linkArticle[0]->href);
                     foreach ($html2->find('tr[class="gsc_a_tr"]') as $temp) {
                         $temp = $temp->find('td[class="gsc_a_t"]', 0)->find('a', 0);
                         if ($temp->innertext == $title) {
-                            $linkArticle2 = $temp->href;
-                            $linkArticle2 = str_replace("amp;", "", $linkArticle2);
-                            $linkArticle2 = str_replace("hl=id", "hl=en", $linkArticle2);
-                            $html3 = file_get_html("https://scholar.google.com$linkArticle2");
+                            $link = str_replace("amp;", "", $temp->href);
+                            $link = str_replace("hl=id", "hl=en", $link);
+                            $html3 = file_get_html("https://scholar.google.com$link");
                             foreach ($html3->find('div[class="gs_scl"]') as $data) {
                                 $key = $data->find('div', 0)->innertext;
                                 if ($key == 'Authors') {
