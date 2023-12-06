@@ -31,16 +31,18 @@
         <?php
         include_once('simple_html_dom.php');
         require_once __DIR__ . '/vendor/autoload.php';
-
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir", 3307); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $dbConnection = mysqli_connect("localhost", "root", "", "project-iir", 3307);
+
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;
             }
-            $key = $_POST['keyword'];
-            $key = str_replace(' ', '+', $key);
-            $html = file_get_html("https://scholar.google.com/scholar?q=$key&hl=en&as_sdt=0,5&as_rr=1");
+
+            $searchKeyword = str_replace(' ', '+', $_POST['keyword']);
+            $searchUrl = "https://scholar.google.com/scholar?q=$searchKeyword&hl=en&as_sdt=0,5&as_rr=1";
+
+            $html = file_get_html($searchUrl);
 
             echo '<p>CRAWLING RESULT</p>';
             echo '<table>';
@@ -50,55 +52,44 @@
             echo '<th>Authors</th>';
             echo '<th>Abstract</th>';
             echo '</tr>';
+
             foreach ($html->find('div[class="gs_r gs_or gs_scl"]') as $article) {
-                $title = $article->find('h3[class="gs_rt"]', 0)->find('a', 0)->plaintext;
-                $numCitation = "";
-                $authors = "";
-                $abstract = "";
+                $title = $article->find('h3[class="gs_rt"] a', 0)->plaintext;
+                $linkArticle = $article->find('div[class="gs_ri"] div[class="gs_a"] a', 0);
 
-                $linkArticle = $article->find('div[class="gs_ri"]', 0)->find('div[class="gs_a"]', 0)->find('a');
-                if (count($linkArticle) > 0) {
-                    $linkArticle = $linkArticle[0]->href;
+                if ($linkArticle) {
+                    $linkArticle = str_replace(["amp;", "hl=id"], ["", "hl=en"], $linkArticle->href);
                     $html2 = file_get_html("https://scholar.google.com$linkArticle");
-                    foreach ($html2->find('tr[class="gsc_a_tr"]') as $temp) {
-                        $temp = $temp->find('td[class="gsc_a_t"]', 0)->find('a', 0);
-                        if ($temp->innertext == $title) {
-                            $linkArticle2 = $temp->href;
-                            $linkArticle2 = str_replace("amp;", "", $linkArticle2);
-                            $linkArticle2 = str_replace("hl=id", "hl=en", $linkArticle2);
-                            $html3 = file_get_html("https://scholar.google.com$linkArticle2");
-                            foreach ($html3->find('div[class="gs_scl"]') as $data) {
-                                $key = $data->find('div', 0)->innertext;
-                                if ($key == 'Authors') {
-                                    $authors = $data->find('div', 1)->innertext;
-                                } elseif ($key == 'Description') {
-                                    $temp = $data->find('div', 1);
-                                    while (count($temp->find('div')) > 0) {
-                                        $temp = $temp->find('div', 0);
-                                    }
-                                    $abstract = $temp->innertext;
-                                } elseif ($key == 'Total citations') {
-                                    $numCitation = $data->find('div', 1)->find('div', 0)->find('a', 0)->innertext;
-                                    $numCitation = str_replace("Cited by ", "", $numCitation);
-                                }
-                            }
-                        $query = mysqli_query($con, "select count(*) from articles where title = '$title'");
-                        $x = mysqli_fetch_all($query);
 
-                        if ($x[0][0] == 0) {
-                            $query = mysqli_query($con, "insert into articles (title, author, citations, abstract) values ('$title', '$authors', $numCitation, '$abstract')");
-                        }
-                        echo '<tr>';
-                        echo "<td>" . $title . "</td>";
-                        echo "<td>" . $numCitation . "</td>";
-                        echo "<td>" . $authors . "</td>";
-                        echo "<td>" . $abstract . "</td>";
-                        echo '</tr>';
-                        break;
+                    foreach ($html2->find('div[class="gs_scl"]') as $data) {
+                        $key = $data->find('div', 0)->innertext;
+                        $value = $data->find('div', 1)->innertext;
+
+                        if ($key == 'Authors') {
+                            $authors = $value;
+                        } elseif ($key == 'Description') {
+                            $abstract = strip_tags($value);
+                        } elseif ($key == 'Total citations') {
+                            $numCitations = str_replace("Cited by ", "", $value);
                         }
                     }
+
+                    $query = mysqli_query($dbConnection, "SELECT COUNT(*) FROM articles WHERE title = '$title'");
+                    $result = mysqli_fetch_all($query);
+
+                    if ($result[0][0] == 0) {
+                        $query = mysqli_query($dbConnection, "INSERT INTO articles (title, author, citations, abstract) VALUES ('$title', '$authors', $numCitations, '$abstract')");
+                    }
+
+                    echo '<tr>';
+                    echo "<td>$title</td>";
+                    echo "<td>$numCitations</td>";
+                    echo "<td>$authors</td>";
+                    echo "<td>$abstract</td>";
+                    echo '</tr>';
                 }
             }
+
             echo '</table>';
         }
         ?>
