@@ -57,8 +57,9 @@
                 if ($linkArticle) {
                     $html2 = file_get_html("https://scholar.google.com".$linkArticle[0]->href);
                     foreach ($html2->find('tr[class="gsc_a_tr"]') as $temp) {
-                        if ($temp->find('td[class="gsc_a_t"]', 0)->find('a', 0)->innertext == $title) {
-                            $link = str_replace(["amp;", "hl=id"], ["", "hl=en"], $temp->href);
+                        $art = $temp->find('td[class="gsc_a_t"]', 0)->find('a', 0);
+                        if ($art->innertext == $title) {
+                            $link = str_replace(["amp;", "hl=id"], ["", "hl=en"], $art->href);
                             $html3 = file_get_html("https://scholar.google.com$link");
                             foreach ($html3->find('div[class="gs_scl"]') as $data) {
                                 $key = $data->find('div', 0)->innertext;
