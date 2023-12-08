@@ -7,10 +7,6 @@ namespace Composer\Autoload;
 class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
 {
     public static $prefixLengthsPsr4 = array (
-        'v' => 
-        array (
-            'voku\\' => 5,
-        ),
         'P' => 
         array (
             'Phpml\\' => 6,
@@ -18,10 +14,6 @@ class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
     );
 
     public static $prefixDirsPsr4 = array (
-        'voku\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/voku/stop-words/src/voku',
-        ),
         'Phpml\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-ai/php-ml/src',
@@ -29,13 +21,6 @@ class ComposerStaticInit3c8a283d43faa1f50c12a6c9a1594520
     );
 
     public static $prefixesPsr0 = array (
-        'T' => 
-        array (
-            'Text' => 
-            array (
-                0 => __DIR__ . '/..' . '/pear/text_languagedetect',
-            ),
-        ),
         'S' => 
         array (
             'Sastrawi\\' => 

@@ -41,7 +41,7 @@ class RandomForest extends Bagging
      * Default value for the ratio is 'log' which results in log(numFeatures, 2) + 1
      * features to be taken into consideration while selecting subspace of features
      *
-     * @param mixed $ratio
+     * @param string|float $ratio
      */
     public function setFeatureSubsetRatio($ratio): self
     {
@@ -73,9 +73,7 @@ class RandomForest extends Bagging
             throw new InvalidArgumentException('RandomForest can only use DecisionTree as base classifier');
         }
 
-        parent::setClassifer($classifier, $classifierOptions);
-
-        return $this;
+        return parent::setClassifer($classifier, $classifierOptions);
     }
 
     /**
@@ -124,16 +122,12 @@ class RandomForest extends Bagging
     }
 
     /**
+     * @param DecisionTree $classifier
+     *
      * @return DecisionTree
      */
     protected function initSingleClassifier(Classifier $classifier): Classifier
     {
-        if (!$classifier instanceof DecisionTree) {
-            throw new InvalidArgumentException(
-                sprintf('Classifier %s expected, got %s', DecisionTree::class, get_class($classifier))
-            );
-        }
-
         if (is_float($this->featureSubsetRatio)) {
             $featureCount = (int) ($this->featureSubsetRatio * $this->featureCount);
         } elseif ($this->featureSubsetRatio === 'sqrt') {

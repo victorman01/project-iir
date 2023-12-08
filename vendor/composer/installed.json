@@ -1,82 +1,33 @@
 {
     "packages": [
         {
-            "name": "pear/text_languagedetect",
-            "version": "v1.0.2",
-            "version_normalized": "1.0.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pear/Text_LanguageDetect.git",
-                "reference": "655b269959782416426cf0aa7bd47e19fed63210"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pear/Text_LanguageDetect/zipball/655b269959782416426cf0aa7bd47e19fed63210",
-                "reference": "655b269959782416426cf0aa7bd47e19fed63210",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpunit/phpunit": "8.*|9.*"
-            },
-            "suggest": {
-                "ext-mbstring": "May require the mbstring PHP extension"
-            },
-            "time": "2023-02-27T20:54:21+00:00",
-            "type": "library",
-            "installation-source": "dist",
-            "autoload": {
-                "psr-0": {
-                    "Text": "./"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "include-path": [
-                "./"
-            ],
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Nicholas Pisarro",
-                    "email": "taak@php.net",
-                    "role": "Lead"
-                }
-            ],
-            "description": "Identify human languages from text samples",
-            "homepage": "http://pear.php.net/package/Text_LanguageDetect",
-            "support": {
-                "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=Text_LanguageDetect",
-                "source": "https://github.com/pear/Text_LanguageDetect"
-            },
-            "install-path": "../pear/text_languagedetect"
-        },
-        {
             "name": "php-ai/php-ml",
-            "version": "0.10.0",
-            "version_normalized": "0.10.0.0",
+            "version": "0.8.0",
+            "version_normalized": "0.8.0.0",
             "source": {
                 "type": "git",
-                "url": "git@gitlab.com:php-ai/php-ml.git",
-                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50"
+                "url": "https://gitlab.com/php-ai/php-ml.git",
+                "reference": "5e02b893e904761cd7e2415b11778cd421494c07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://gitlab.com/api/v4/projects/php-ai%2Fphp-ml/repository/archive.zip?sha=543f11158c57bf64ef8ddecd5bab51d396d39f50",
-                "reference": "543f11158c57bf64ef8ddecd5bab51d396d39f50",
+                "url": "https://gitlab.com/api/v4/projects/php-ai%2Fphp-ml/repository/archive.zip?sha=5e02b893e904761cd7e2415b11778cd421494c07",
+                "reference": "5e02b893e904761cd7e2415b11778cd421494c07",
                 "shasum": ""
             },
             "require": {
-                "php": "^8.0"
+                "php": "^7.1"
             },
             "require-dev": {
-                "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan": "^0.12",
-                "phpstan/phpstan-phpunit": "^0.12",
-                "phpstan/phpstan-strict-rules": "^0.12",
-                "phpunit/phpunit": "^8.0"
+                "phpbench/phpbench": "^0.14.0",
+                "phpstan/phpstan-phpunit": "^0.10",
+                "phpstan/phpstan-shim": "^0.10",
+                "phpstan/phpstan-strict-rules": "^0.10",
+                "phpunit/phpunit": "^7.0.0",
+                "symplify/coding-standard": "^5.1",
+                "symplify/easy-coding-standard": "^5.1"
             },
-            "time": "2022-11-09T09:25:29+00:00",
+            "time": "2019-03-20T23:22:45+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -95,7 +46,7 @@
                 }
             ],
             "description": "PHP-ML - Machine Learning library for PHP",
-            "homepage": "https://gitlab.com/php-ai/php-ml",
+            "homepage": "https://github.com/php-ai/php-ml",
             "keywords": [
                 "Neural network",
                 "artificial intelligence",
@@ -105,6 +56,9 @@
                 "machine learning",
                 "pattern recognition"
             ],
+            "support": {
+                "issues": "https://gitlab.com/api/v4/projects/19024967/issues"
+            },
             "install-path": "../php-ai/php-ml"
         },
         {
@@ -169,56 +123,6 @@
                 "source": "https://github.com/sastrawi/sastrawi"
             },
             "install-path": "../sastrawi/sastrawi"
-        },
-        {
-            "name": "voku/stop-words",
-            "version": "2.0.1",
-            "version_normalized": "2.0.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/voku/stop-words.git",
-                "reference": "8e63c0af20f800b1600783764e0ce19e53969f71"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/voku/stop-words/zipball/8e63c0af20f800b1600783764e0ce19e53969f71",
-                "reference": "8e63c0af20f800b1600783764e0ce19e53969f71",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.0.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~6.0"
-            },
-            "time": "2018-11-23T01:37:27+00:00",
-            "type": "library",
-            "installation-source": "dist",
-            "autoload": {
-                "psr-4": {
-                    "voku\\": "src/voku/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Lars Moelleken",
-                    "homepage": "http://www.moelleken.org/"
-                }
-            ],
-            "description": "Stop-Words via PHP",
-            "keywords": [
-                "stop words",
-                "stop-words"
-            ],
-            "support": {
-                "issues": "https://github.com/voku/stop-words/issues",
-                "source": "https://github.com/voku/stop-words/tree/master"
-            },
-            "install-path": "../voku/stop-words"
         }
     ],
     "dev": true,

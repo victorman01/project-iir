@@ -50,7 +50,7 @@ class StandardDeviation
         $mean = Mean::arithmetic($numbers);
 
         return array_sum(array_map(
-            static function ($val) use ($mean): float {
+            function ($val) use ($mean) {
                 return ($val - $mean) ** 2;
             },
             $numbers

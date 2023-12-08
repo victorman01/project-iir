@@ -6,6 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
-    'voku\\' => array($vendorDir . '/voku/stop-words/src/voku'),
     'Phpml\\' => array($vendorDir . '/php-ai/php-ml/src'),
 );
