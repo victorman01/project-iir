@@ -161,7 +161,7 @@
                   $similairty = $euclidean->distance($sample_data[$i], $sample_data[$count_data - 1]);
                   array_push($similarity_data, round($similairty, 3));
                }
-               // array_multisort($similarity_data, SORT_ASC, SORT_NUMERIC, $title);
+               array_multisort($similarity_data, SORT_ASC, SORT_NUMERIC, $title, $citations, $author, $abstract);
             }
 
             // Calculate Jaccard Similarity (Custom Function)
@@ -169,8 +169,6 @@
             {
                $intersection = count(array_intersect($set1, $set2));
                $union = count(array_unique(array_merge($set1, $set2)));
-
-               print_r("Intersection: $intersection, Union: $union\n");
 
                return $union > 0 ? $intersection / $union : 0;
             }
@@ -181,7 +179,7 @@
                   array_push($similarity_data, round($similarity, 3));
                }
 
-               // array_multisort($similarity_data, SORT_ASC, SORT_NUMERIC, $title);
+               array_multisort($similarity_data, SORT_DESC, SORT_NUMERIC, $title, $citations, $author, $abstract);
             }
 
             // Print the table
