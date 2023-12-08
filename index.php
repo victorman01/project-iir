@@ -14,7 +14,6 @@
 
       .results-container {
          width: 90%;
-         /* Adjust the width as needed */
       }
 
       .suggestions-container {
@@ -90,9 +89,13 @@
          use Phpml\Math\Distance\Euclidean;
 
          if (isset($_GET['search'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_GET['keyword'])) {
                echo '<p style="color: red;">Please enter a keyword.</p>';
+               return;
+            }
+            if(empty($_GET['search-type'])) {
+               echo '<p style="color: red;">Please select a type.</p>';
                return;
             }
 
@@ -164,7 +167,7 @@
             }
 
 
-            // Calculate Euclidean Similarity
+            // Calculate Euclidean Similarity`
             $euclidean = new Euclidean();
             if ($_GET["search-type"] == "euclidean") {
                for ($i = 0; $i < $count_data - 1; $i++) {
