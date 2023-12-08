@@ -154,16 +154,6 @@
 
             $count_data = count($sample_data);
 
-            // Calculate Euclidean Similarity
-            $euclidean = new Euclidean();
-            if ($_GET["search-type"] == "euclidean") {
-               for ($i = 0; $i < $count_data - 1; $i++) {
-                  $similairty = $euclidean->distance($sample_data[$i], $sample_data[$count_data - 1]);
-                  array_push($similarity_data, round($similairty, 3));
-               }
-               array_multisort($similarity_data, SORT_ASC, SORT_NUMERIC, $title, $citations, $author, $abstract);
-            }
-
             // Calculate Jaccard Similarity (Custom Function)
             function calculateJaccardSimilarity($set1, $set2)
             {
@@ -173,7 +163,16 @@
                return $union > 0 ? $intersection / $union : 0;
             }
 
-            if ($_GET["search-type"] == "jaccard") {
+
+            // Calculate Euclidean Similarity
+            $euclidean = new Euclidean();
+            if ($_GET["search-type"] == "euclidean") {
+               for ($i = 0; $i < $count_data - 1; $i++) {
+                  $similairty = $euclidean->distance($sample_data[$i], $sample_data[$count_data - 1]);
+                  array_push($similarity_data, round($similairty, 3));
+               }
+               array_multisort($similarity_data, SORT_ASC, SORT_NUMERIC, $title, $citations, $author, $abstract);
+            } else if ($_GET["search-type"] == "jaccard") {
                for ($i = 0; $i < $count_data - 1; $i++) {
                   $similarity = calculateJaccardSimilarity($sample_data[$i], $sample_data[$count_data - 1]);
                   array_push($similarity_data, round($similarity, 3));
