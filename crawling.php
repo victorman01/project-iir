@@ -33,13 +33,13 @@
         require_once __DIR__ . '/vendor/autoload.php';
 
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;
             }
             $key = str_replace(' ', '+', $_POST['keyword']);
-            $html = file_get_html("https://scholar.google.com/scholar?q=$key&hl=en&as_sdt=0,5&as_rr=1");
+            $html = file_get_html("https://scholar.google.com/scholar?hl=id&as_sdt=0%2C5&q=$key&btnG=");
 
             echo '<p>CRAWLING RESULT</p>';
             echo '<table>';

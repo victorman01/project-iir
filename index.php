@@ -1,3 +1,20 @@
+<?php 
+include_once('simple_html_dom.php');
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Phpml\FeatureExtraction\TokenCountVectorizer;
+use Phpml\Tokenization\WhitespaceTokenizer;
+use Phpml\FeatureExtraction\TfIdfTransformer;
+use Phpml\Math\Distance\Euclidean;
+
+$stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
+$stemmer = $stemmerFactory->createStemmer();
+
+$stopwordFactory = new \Sastrawi\StopWordRemover\StopWordRemoverFactory();
+$stopword = $stopwordFactory->createStopWordRemover();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -60,6 +77,97 @@
                </label>
             </div>
             <p id="error-message" style="color: red;"></p>
+
+            <?php
+            function getQueryExpansions($conn, $query)
+            {
+               $queryExpansions = [];
+
+               $fetchTopArticlesSQL = "SELECT title, abstract FROM articles";
+               $topArticlesResult = $conn->query($fetchTopArticlesSQL);
+
+               if ($topArticlesResult->num_rows > 0) {
+                  while ($articleRow = $topArticlesResult->fetch_assoc()) {
+                     // hitung jarak antara keyword dengan setiap judul dan abstrak
+                     $titleSimilarity = calculateSimilarity($query, $articleRow['title']);
+                     $abstractSimilarity = calculateSimilarity($query, $articleRow['abstract']);
+                     $totalSimilarity = ($titleSimilarity + $abstractSimilarity) / 2;
+
+                     // simpan ke array
+                     $queryExpansions[] = [
+                        'query' => $query . " " . $articleRow['title'] . " " . $articleRow['abstract'],
+                        'similarity' => $totalSimilarity,
+                     ];
+                  }
+               }
+
+               // Sort by desc
+               usort($queryExpansions, function ($a, $b) {
+                  return $b['similarity'] - $a['similarity'];
+               });
+
+               // Return top 3 query expansions
+               return array_slice($queryExpansions, 0, 3);
+            }
+
+            function calculateSimilarity($string1, $string2)
+            {
+               similar_text($string1, $string2, $similarity);
+               return $similarity;
+            }
+
+            function generateFiveWords($query, $numWords)
+            {
+               $words = explode(" ", $query);
+               // akan generate 5 kata
+               return array_slice($words, 1, $numWords);
+            }
+
+            if (isset($_GET['keyword']) && isset($_GET["search-type"])) {
+               $userQuery = isset($_GET['keyword']) ? strtolower($_GET['keyword']) : '';
+               $conn = mysqli_connect("localhost", "root", "", "project-iir");
+               $queryExpansions = getQueryExpansions($conn, $userQuery);
+               // echo "Top 3 Query Expansions:<br>";
+               // foreach ($queryExpansions as $queryExpansion) {
+               //    echo $queryExpansion['query'] . " - Similarity: " . $queryExpansion['similarity'] . "<br>";
+               // }
+
+               //buat 5 kata setiap query expansion, hitung jaraknya
+               $expandedQueries = [];
+               foreach ($queryExpansions as $queryExpansion) {
+                  for ($i=2; $i <= 6; $i++) { 
+                     $words = generateFiveWords($queryExpansion['query'], $i);
+                     $expandedQuery = strtolower(implode(" ", $words));
+   
+                     $outputStem = $stemmer->stem($expandedQuery);
+                     $outputStop = $stopword->remove($outputStem);
+   
+                     $similarity = calculateSimilarity($userQuery, $outputStop);
+   
+                     $expandedQueries[] = [
+                        'query' => $expandedQuery,
+                        'similarity' => $similarity,
+                     ];
+                  }
+               }
+
+               // Display the top 3 expanded queries
+               echo "<br>Top 3 Expanded Queries:<br>";
+
+               usort($expandedQueries, function ($a, $b) {
+                  return $b['similarity'] - $a['similarity'];
+               });
+
+
+               foreach (array_slice($expandedQueries, 0, 3) as $expandedQuery) {
+                  $expandedQuery['query'] = str_replace($userQuery, "<b>$userQuery</b>", $expandedQuery['query']);
+                  echo $expandedQuery['query'] . " - Similarity: " . $expandedQuery['similarity'] . "<br>";
+               }
+               // Close the database connection
+               $conn->close();
+            }
+
+            ?>
          </form>
 
 
@@ -80,21 +188,14 @@
          </script>
 
          <?php
-         include_once('simple_html_dom.php');
-         require_once __DIR__ . '/vendor/autoload.php';
-
-         use Phpml\FeatureExtraction\TokenCountVectorizer;
-         use Phpml\Tokenization\WhitespaceTokenizer;
-         use Phpml\FeatureExtraction\TfIdfTransformer;
-         use Phpml\Math\Distance\Euclidean;
 
          if (isset($_GET['search'])) {
-            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_GET['keyword'])) {
                echo '<p style="color: red;">Please enter a keyword.</p>';
                return;
             }
-            if(empty($_GET['search-type'])) {
+            if (empty($_GET['search-type'])) {
                echo '<p style="color: red;">Please select a type.</p>';
                return;
             }
@@ -108,12 +209,6 @@
             echo '<th>Abstract</th>';
             echo '<th>Similarity Score</th>';
             echo '</tr>';
-
-            $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
-            $stemmer = $stemmerFactory->createStemmer();
-
-            $stopwordFactory = new \Sastrawi\StopWordRemover\StopWordRemoverFactory();
-            $stopword = $stopwordFactory->createStopWordRemover();
 
             $sample_data = array();
             $title = array();
