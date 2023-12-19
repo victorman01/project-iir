@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Scholar Crawler | Crawl</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -33,7 +34,7 @@
         require_once __DIR__ . '/vendor/autoload.php';
 
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;

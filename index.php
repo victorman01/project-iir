@@ -22,6 +22,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Google Scholar Crawler | Home</title>
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
    <link rel="stylesheet" href="css/styles.css">
    <style>
       .container {
@@ -109,7 +110,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
          <?php
 
          if (isset($_GET['search'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_GET['keyword'])) {
                echo '<p style="color: red;">Please enter a keyword.</p>';
                return;
@@ -119,16 +120,6 @@ $stopword = $stopwordFactory->createStopWordRemover();
                return;
             }
             $search_type = $_GET['search-type'];
-
-            echo '<p>SEARCH RESULT</p>';
-            echo '<table>';
-            echo '<tr>';
-            echo '<th>Title</th>';
-            echo '<th>Number Citations</th>';
-            echo '<th>Authors</th>';
-            echo '<th>Abstract</th>';
-            echo '<th>Similarity Score</th>';
-            echo '</tr>';
 
             $sample_data = array();
             $title = array();
@@ -158,7 +149,20 @@ $stopword = $stopwordFactory->createStopWordRemover();
                $outputStop = $stopword->remove($outputStem);
 
                $sample_data[] = $outputStop;
+            }else{
+               echo '<p style="color: red;">Please do crawling first.</p>';
+               return;
             }
+            
+            echo '<p>SEARCH RESULT</p>';
+            echo '<table>';
+            echo '<tr>';
+            echo '<th>Title</th>';
+            echo '<th>Number Citations</th>';
+            echo '<th>Authors</th>';
+            echo '<th>Abstract</th>';
+            echo '<th>Similarity Score</th>';
+            echo '</tr>';
 
             // Calculate TF
             $tf = new TokenCountVectorizer(new WhitespaceTokenizer());
@@ -195,7 +199,6 @@ $stopword = $stopwordFactory->createStopWordRemover();
                   $similarity = calculateJaccardSimilarity($sample_data[$i], $sample_data[$count_data - 1]);
                   array_push($similarity_data, round($similarity, 3));
                }
-
                array_multisort($similarity_data, SORT_DESC, SORT_NUMERIC, $title, $citations, $author, $abstract);
             }
 
@@ -293,7 +296,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
 
          if (isset($_GET['keyword']) && isset($_GET["search-type"])) {
             $userQuery = isset($_GET['keyword']) ? strtolower($_GET['keyword']) : '';
-            $conn = mysqli_connect("localhost", "root", "", "project-iir");
+            $conn = mysqli_connect("localhost:3307", "root", "", "project-iir");
             $queryExpansions = getQueryExpansions($conn, $userQuery);
             // echo "Top 3 Query Expansions:<br>";
             // foreach ($queryExpansions as $queryExpansion) {
@@ -325,8 +328,6 @@ $stopword = $stopwordFactory->createStopWordRemover();
             usort($expandedQueries, function ($a, $b) {
                return $b['similarity'] - $a['similarity'];
             });
-
-
             foreach (array_slice($expandedQueries, 0, 3) as $expandedQuery) {
                $urlParams = http_build_query([
                    'keyword' => $expandedQuery['query'],
