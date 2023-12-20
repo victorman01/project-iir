@@ -1,6 +1,8 @@
 <?php
 include_once('simple_html_dom.php');
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/language-detector/Text/LanguageDetect.php';
+require_once __DIR__.'/porter2-master/demo/process.inc';
 
 use Phpml\FeatureExtraction\TokenCountVectorizer;
 use Phpml\Tokenization\WhitespaceTokenizer;
@@ -110,7 +112,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
          <?php
 
          if (isset($_GET['search'])) {
-            $con = mysqli_connect("localhost:3307", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
             if (empty($_GET['keyword'])) {
                echo '<p style="color: red;">Please enter a keyword.</p>';
                return;
@@ -140,20 +142,33 @@ $stopword = $stopwordFactory->createStopWordRemover();
                   $citations[$i] = $row["citations"];
                   $abstract[$i] = $row["abstract"];
 
-                  $stemTitle = $stemmer->stem($row["title"]);
-                  $stopTitle = $stopword->remove($stemTitle);
-                  $sample_data[$i] = $stopTitle;
+                  $sample_data[$i] = $row["title"];
                   $i++;
                }
-               $outputStem = $stemmer->stem($_GET["keyword"]);
-               $outputStop = $stopword->remove($outputStem);
+               $sample_data[] = $_GET['keyword'];
 
-               $sample_data[] = $outputStop;
-            }else{
+               $j = 0;
+               $ld = new Text_LanguageDetect();
+               for ($j = 0; $j < count($sample_data); $j++) {
+                  $results = $ld->detect($sample_data[$j], 10);
+
+                  foreach ($results as $language => $confidence) {
+                     if($language == 'indonesian'){
+                        $outputStem = $stemmer->stem($sample_data[$j]);
+                        $output = $stopword->remove($outputStem);
+                     }
+                     else{
+                        $output = porterstemmer_process($sample_data[$j]);
+                     }
+                  }
+                  $sample_data[$j] = $output;
+               }
+
+            } else {
                echo '<p style="color: red;">Please do crawling first.</p>';
                return;
             }
-            
+
             echo '<p>SEARCH RESULT</p>';
             echo '<table>';
             echo '<tr>';
@@ -234,7 +249,13 @@ $stopword = $stopwordFactory->createStopWordRemover();
             $startPage = max(1, $currentPage - 2);
             $endPage = min($totalPages, $currentPage + 2);
 
-            for ($i = 1; $i <= $totalPages; $i++) {
+            if ($currentPage > 1) {
+               echo "<a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=1#'>First</a>&emsp;";
+               $prevPage = $currentPage - 1;
+               echo "<a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$prevPage#'>Prev</a>&emsp;";
+           }
+
+            for ($i = $startPage; $i <= $endPage; $i++) {
                if ($i == $currentPage) {
                   echo "<span style='color: darkblue;'>$i</span>&emsp;";
                } else {
@@ -242,108 +263,114 @@ $stopword = $stopwordFactory->createStopWordRemover();
                }
             }
 
+            if ($currentPage < $totalPages) {
+               $nextPage = $currentPage + 1;
+               echo " <a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$nextPage#'>Next</a>&emsp;";
+               echo " <a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$totalPages#'>Last</a>&emsp;";
+           }
+
             echo "</div>";
          }
-         
+
          ?>
 
 
       </div>
-         <?php
-         function getQueryExpansions($conn, $query)
-         {
-            $queryExpansions = [];
+      <?php
+      function getQueryExpansions($conn, $query)
+      {
+         $queryExpansions = [];
 
-            $fetchTopArticlesSQL = "SELECT title, abstract FROM articles";
-            $topArticlesResult = $conn->query($fetchTopArticlesSQL);
+         $fetchTopArticlesSQL = "SELECT title, abstract FROM articles";
+         $topArticlesResult = $conn->query($fetchTopArticlesSQL);
 
-            if ($topArticlesResult->num_rows > 0) {
-               while ($articleRow = $topArticlesResult->fetch_assoc()) {
-                  // hitung jarak antara keyword dengan setiap judul dan abstrak
-                  $titleSimilarity = calculateSimilarity($query, $articleRow['title']);
-                  $abstractSimilarity = calculateSimilarity($query, $articleRow['abstract']);
-                  $totalSimilarity = ($titleSimilarity + $abstractSimilarity) / 2;
+         if ($topArticlesResult->num_rows > 0) {
+            while ($articleRow = $topArticlesResult->fetch_assoc()) {
+               // hitung jarak antara keyword dengan setiap judul dan abstrak
+               $titleSimilarity = calculateSimilarity($query, $articleRow['title']);
+               $abstractSimilarity = calculateSimilarity($query, $articleRow['abstract']);
+               $totalSimilarity = ($titleSimilarity + $abstractSimilarity) / 2;
 
-                  // simpan ke array
-                  $queryExpansions[] = [
-                     'query' => $query . " " . $articleRow['title'] . " " . $articleRow['abstract'],
-                     'similarity' => $totalSimilarity,
-                  ];
-               }
+               // simpan ke array
+               $queryExpansions[] = [
+                  'query' => $query . " " . $articleRow['title'] . " " . $articleRow['abstract'],
+                  'similarity' => $totalSimilarity,
+               ];
             }
-
-            // Sort by desc
-            usort($queryExpansions, function ($a, $b) {
-               return $b['similarity'] - $a['similarity'];
-            });
-
-            // Return top 3 query expansions
-            return array_slice($queryExpansions, 0, 3);
          }
 
-         function calculateSimilarity($string1, $string2)
-         {
-            similar_text($string1, $string2, $similarity);
-            return $similarity;
-         }
+         // Sort by desc
+         usort($queryExpansions, function ($a, $b) {
+            return $b['similarity'] - $a['similarity'];
+         });
 
-         function generateFiveWords($query, $numWords)
-         {
-            $words = explode(" ", $query);
-            // akan generate 5 kata
-            return array_slice($words, 1, $numWords);
-         }
+         // Return top 3 query expansions
+         return array_slice($queryExpansions, 0, 3);
+      }
 
-         if (isset($_GET['keyword']) && isset($_GET["search-type"])) {
-            $userQuery = isset($_GET['keyword']) ? strtolower($_GET['keyword']) : '';
-            $conn = mysqli_connect("localhost:3307", "root", "", "project-iir");
-            $queryExpansions = getQueryExpansions($conn, $userQuery);
-            // echo "Top 3 Query Expansions:<br>";
-            // foreach ($queryExpansions as $queryExpansion) {
-            //    echo $queryExpansion['query'] . " - Similarity: " . $queryExpansion['similarity'] . "<br>";
-            // }
-         
-            //buat 5 kata setiap query expansion, hitung jaraknya
-            $expandedQueries = [];
-            foreach ($queryExpansions as $queryExpansion) {
-               for ($i = 2; $i <= 6; $i++) {
-                  $words = generateFiveWords($queryExpansion['query'], $i);
-                  $expandedQuery = strtolower(implode(" ", $words));
+      function calculateSimilarity($string1, $string2)
+      {
+         similar_text($string1, $string2, $similarity);
+         return $similarity;
+      }
 
-                  $outputStem = $stemmer->stem($expandedQuery);
-                  $outputStop = $stopword->remove($outputStem);
+      function generateFiveWords($query, $numWords)
+      {
+         $words = explode(" ", $query);
+         // akan generate 5 kata
+         return array_slice($words, 1, $numWords);
+      }
 
-                  $similarity = calculateSimilarity($userQuery, $outputStop);
+      if (isset($_GET['keyword']) && isset($_GET["search-type"])) {
+         $userQuery = isset($_GET['keyword']) ? strtolower($_GET['keyword']) : '';
+         $conn = mysqli_connect("localhost", "root", "", "project-iir");
+         $queryExpansions = getQueryExpansions($conn, $userQuery);
+         // echo "Top 3 Query Expansions:<br>";
+         // foreach ($queryExpansions as $queryExpansion) {
+         //    echo $queryExpansion['query'] . " - Similarity: " . $queryExpansion['similarity'] . "<br>";
+         // }
+      
+         //buat 5 kata setiap query expansion, hitung jaraknya
+         $expandedQueries = [];
+         foreach ($queryExpansions as $queryExpansion) {
+            for ($i = 2; $i <= 6; $i++) {
+               $words = generateFiveWords($queryExpansion['query'], $i);
+               $expandedQuery = strtolower(implode(" ", $words));
 
-                  $expandedQueries[] = [
-                     'query' => $expandedQuery,
-                     'similarity' => $similarity,
-                  ];
-               }
+               $outputStem = $stemmer->stem($expandedQuery);
+               $outputStop = $stopword->remove($outputStem);
+
+               $similarity = calculateSimilarity($userQuery, $outputStop);
+
+               $expandedQueries[] = [
+                  'query' => $expandedQuery,
+                  'similarity' => $similarity,
+               ];
             }
-
-            // Display the top 3 expanded queries
-            echo "<br>Top 3 Expanded Queries:<br>";
-
-            usort($expandedQueries, function ($a, $b) {
-               return $b['similarity'] - $a['similarity'];
-            });
-            foreach (array_slice($expandedQueries, 0, 3) as $expandedQuery) {
-               $urlParams = http_build_query([
-                   'keyword' => $expandedQuery['query'],
-                   'search-type' => $_GET['search-type'],
-                   'search' => "",
-                   'items-per-page' => $_GET['items-per-page']
-               ]);
-               $expandedQuery['query'] = str_replace($userQuery, "<b>$userQuery</b>", $expandedQuery['query']);
-               $targetURL = "?" . $urlParams;
-               echo "<a href='$targetURL'>" . $expandedQuery['query'] . "</a> - Similarity: " . $expandedQuery['similarity'] . "<br>";
-           }
-            // Close the database connection
-            $conn->close();
          }
 
-         ?>
+         // Display the top 3 expanded queries
+         echo "<br>Top 3 Expanded Queries:<br>";
+
+         usort($expandedQueries, function ($a, $b) {
+            return $b['similarity'] - $a['similarity'];
+         });
+         foreach (array_slice($expandedQueries, 0, 3) as $expandedQuery) {
+            $urlParams = http_build_query([
+               'keyword' => $expandedQuery['query'],
+               'search-type' => $_GET['search-type'],
+               'search' => "",
+               'items-per-page' => $_GET['items-per-page']
+            ]);
+            $expandedQuery['query'] = str_replace($userQuery, "<b>$userQuery</b>", $expandedQuery['query']);
+            $targetURL = "?" . $urlParams;
+            echo "<a href='$targetURL'>" . $expandedQuery['query'] . "</a> - Similarity: " . $expandedQuery['similarity'] . "<br>";
+         }
+         // Close the database connection
+         $conn->close();
+      }
+
+      ?>
    </main>
 
    <script>
