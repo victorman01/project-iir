@@ -34,7 +34,7 @@
         require_once __DIR__ . '/vendor/autoload.php';
 
         if (isset($_POST['crawls'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir");
             if (empty($_POST['keyword'])) {
                 echo '<p style="color: red;">Please enter a keyword.</p>';
                 return;
@@ -45,7 +45,7 @@
             echo '<p>CRAWLING RESULT</p>';
             echo '<table>';
             echo '<tr>';
-            echo '<th>Title</th>';
+            echo '<th>Title</th>';  
             echo '<th>Number Citations</th>';
             echo '<th>Authors</th>';
             echo '<th>Abstract</th>';
@@ -55,7 +55,7 @@
                 if($title = $article->find('h3[class="gs_rt"]', 0)->find('a', 0)){
                     $title = $article->find('h3[class="gs_rt"]', 0)->find('a', 0)->plaintext;
                     $numCitation = $authors = $abstract = "";
-                    $linkArticle = $article->find('div[class="gs_ri"]', 0)->find('div[class="gs_a"]', 0)->find('a');
+                    $linkArticle = $article->find('div[class="gs_ri"]', 0)->find('div[class="gs_a"]', 0)->find('a');                    
                     if ($linkArticle) {
                         $html2 = file_get_html("https://scholar.google.com".$linkArticle[0]->href);
                         foreach ($html2->find('tr[class="gsc_a_tr"]') as $temp) {

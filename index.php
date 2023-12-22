@@ -1,19 +1,13 @@
 <?php
 include_once('simple_html_dom.php');
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__.'/language-detector/Text/LanguageDetect.php';
-require_once __DIR__.'/porter2-master/demo/process.inc';
+require_once __DIR__ . '/language-detector/Text/LanguageDetect.php';
+require_once __DIR__ . '/porter2-master/demo/process.inc';
 
 use Phpml\FeatureExtraction\TokenCountVectorizer;
 use Phpml\Tokenization\WhitespaceTokenizer;
 use Phpml\FeatureExtraction\TfIdfTransformer;
 use Phpml\Math\Distance\Euclidean;
-
-$stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
-$stemmer = $stemmerFactory->createStemmer();
-
-$stopwordFactory = new \Sastrawi\StopWordRemover\StopWordRemoverFactory();
-$stopword = $stopwordFactory->createStopWordRemover();
 
 ?>
 
@@ -111,8 +105,37 @@ $stopword = $stopwordFactory->createStopWordRemover();
 
          <?php
 
+         function detectLanguage($term)
+         {
+            $ld = new Text_LanguageDetect();
+            $stemmerFactory = new \Sastrawi\Stemmer\StemmerFactory();
+            $stemmer = $stemmerFactory->createStemmer();
+
+            $stopwordFactory = new \Sastrawi\StopWordRemover\StopWordRemoverFactory();
+            $stopword = $stopwordFactory->createStopWordRemover();
+
+            $results = $ld->detect($term, 10);
+            $languageFound = false;
+            $output = "";
+
+            foreach ($results as $language => $confidence) {
+               if ($language == 'indonesian') {
+                  $outputStem = $stemmer->stem($term);
+                  $output = $stopword->remove($outputStem);
+                  $languageFound = true;
+               } else if ($language == 'english') {
+                  $output = porterstemmer_process($term);
+                  $languageFound = true;
+               }
+            }
+            if (!$languageFound) {
+               $output = porterstemmer_process($term);
+            }
+            return $output;
+         }
+
          if (isset($_GET['search'])) {
-            $con = mysqli_connect("localhost", "root", "", "project-iir"); // sesuaikan portnya, kalo 3306 hapus aja 3307 nya
+            $con = mysqli_connect("localhost", "root", "", "project-iir");
             if (empty($_GET['keyword'])) {
                echo '<p style="color: red;">Please enter a keyword.</p>';
                return;
@@ -147,21 +170,9 @@ $stopword = $stopwordFactory->createStopWordRemover();
                }
                $sample_data[] = $_GET['keyword'];
 
-               $j = 0;
-               $ld = new Text_LanguageDetect();
                for ($j = 0; $j < count($sample_data); $j++) {
-                  $results = $ld->detect($sample_data[$j], 10);
+                  $sample_data[$j] = detectLanguage($sample_data[$j]);
 
-                  foreach ($results as $language => $confidence) {
-                     if($language == 'indonesian'){
-                        $outputStem = $stemmer->stem($sample_data[$j]);
-                        $output = $stopword->remove($outputStem);
-                     }
-                     else{
-                        $output = porterstemmer_process($sample_data[$j]);
-                     }
-                  }
-                  $sample_data[$j] = $output;
                }
 
             } else {
@@ -169,15 +180,6 @@ $stopword = $stopwordFactory->createStopWordRemover();
                return;
             }
 
-            echo '<p>SEARCH RESULT</p>';
-            echo '<table>';
-            echo '<tr>';
-            echo '<th>Title</th>';
-            echo '<th>Number Citations</th>';
-            echo '<th>Authors</th>';
-            echo '<th>Abstract</th>';
-            echo '<th>Similarity Score</th>';
-            echo '</tr>';
 
             // Calculate TF
             $tf = new TokenCountVectorizer(new WhitespaceTokenizer());
@@ -215,10 +217,14 @@ $stopword = $stopwordFactory->createStopWordRemover();
                   array_push($similarity_data, round($similarity, 3));
                }
                array_multisort($similarity_data, SORT_DESC, SORT_NUMERIC, $title, $citations, $author, $abstract);
+            } else {
+               echo '<p style="color: red;">Please select available type.</p>';
+               return;
             }
 
 
-            $itemsPerPage = isset($_GET["items-per-page"]) ? intval($_GET["items-per-page"]) : 5;
+            $itemsPerPage = (isset($_GET["items-per-page"]) && is_numeric($_GET['items-per-page'])) ? intval($_GET["items-per-page"]) : 5;
+            $itemsPerPage = ($itemsPerPage > 0) ? $itemsPerPage : 5;
 
             // Menghitung indeks awal dan jumlah item untuk query
             $startIndex = 0;  // Default indeks awal
@@ -226,12 +232,22 @@ $stopword = $stopwordFactory->createStopWordRemover();
             $currentPage = 1;
 
             if (isset($_GET['page']) && is_numeric($_GET['page'])) {
-               $currentPage = $_GET['page'];
+               $currentPage = ($_GET['page'] > 0) ? $_GET['page'] : 1;
                $startIndex = ($currentPage - 1) * $itemsPerPage;
                $endIndex = $startIndex + $itemsPerPage;
             }
 
             // Print the table
+            echo '<p>SEARCH RESULT</p>';
+            echo '<table>';
+            echo '<tr>';
+            echo '<th>Title</th>';
+            echo '<th>Number Citations</th>';
+            echo '<th>Authors</th>';
+            echo '<th>Abstract</th>';
+            echo '<th>Similarity Score</th>';
+            echo '</tr>';
+
             for ($i = $startIndex; $i < min($endIndex, count($title)); $i++) {
                echo '<tr>';
                echo "<td>" . $title[$i] . "</td>";
@@ -253,7 +269,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
                echo "<a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=1#'>First</a>&emsp;";
                $prevPage = $currentPage - 1;
                echo "<a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$prevPage#'>Prev</a>&emsp;";
-           }
+            }
 
             for ($i = $startPage; $i <= $endPage; $i++) {
                if ($i == $currentPage) {
@@ -267,7 +283,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
                $nextPage = $currentPage + 1;
                echo " <a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$nextPage#'>Next</a>&emsp;";
                echo " <a class='page-number' href='?keyword=" . htmlspecialchars($_GET['keyword']) . "&search=&search-type=$search_type&items-per-page=$itemsPerPage&page=$totalPages#'>Last</a>&emsp;";
-           }
+            }
 
             echo "</div>";
          }
@@ -337,10 +353,9 @@ $stopword = $stopwordFactory->createStopWordRemover();
                $words = generateFiveWords($queryExpansion['query'], $i);
                $expandedQuery = strtolower(implode(" ", $words));
 
-               $outputStem = $stemmer->stem($expandedQuery);
-               $outputStop = $stopword->remove($outputStem);
+               $output = detectLanguage($expandedQuery);
 
-               $similarity = calculateSimilarity($userQuery, $outputStop);
+               $similarity = calculateSimilarity($userQuery, $output);
 
                $expandedQueries[] = [
                   'query' => $expandedQuery,
@@ -364,7 +379,7 @@ $stopword = $stopwordFactory->createStopWordRemover();
             ]);
             $expandedQuery['query'] = str_replace($userQuery, "<b>$userQuery</b>", $expandedQuery['query']);
             $targetURL = "?" . $urlParams;
-            echo "<a href='$targetURL'>" . $expandedQuery['query'] . "</a> - Similarity: " . $expandedQuery['similarity'] . "<br>";
+            echo "<a href='$targetURL'>" . $expandedQuery['query'] . "</a><br>";
          }
          // Close the database connection
          $conn->close();
